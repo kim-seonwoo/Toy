@@ -22,6 +22,8 @@ struct SignUpView: View {
                     .bold()
                 
                 VStack(spacing: 20) {
+                    PoliTextField(placeholder: "닉네임", text: $viewModel.displayName)
+                    
                     PoliTextField(placeholder: "이메일", text: $viewModel.email)
                     
                     PoliTextField(placeholder: "비밀번호", text: $viewModel.password, isSecure: true)
@@ -49,8 +51,7 @@ struct SignUpView: View {
             .padding()
         }
         .fullScreenCover(isPresented: $viewModel.isSignedUp) {
-            Text("Welcome! Your account has been created.")
-                .font(.title)
+            ForumView()
         }
     }
 }

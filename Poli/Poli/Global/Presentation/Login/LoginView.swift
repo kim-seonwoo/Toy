@@ -66,8 +66,7 @@ struct LoginView: View {
                 .padding(.horizontal, 24)
             }
             .fullScreenCover(isPresented: $viewModel.isLoggedIn) {
-                Text("Welcome! You are logged in.")
-                    .font(.title)
+                ForumView()
             }
         }
     }

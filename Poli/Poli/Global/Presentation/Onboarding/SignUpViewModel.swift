@@ -9,6 +9,7 @@ import SwiftUI
 import FirebaseAuth
 
 class SignUpViewModel: ObservableObject {
+    @Published var displayName: String = ""
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var confirmPassword: String = ""
@@ -16,17 +17,14 @@ class SignUpViewModel: ObservableObject {
     @Published var isSignedUp: Bool = false
 
     func signUp() {
-        // 비밀번호와 확인 비밀번호가 일치하는지 확인
         guard password == confirmPassword else {
             errorMessage = "비밀번호가 일치하지 않습니다."
             return
         }
-        
-        // Firebase로 회원가입 요청
+
         Auth.auth().createUser(withEmail: email, password: password) { [weak self] authResult, error in
             DispatchQueue.main.async {
                 if let error = error as NSError? {
-                    // Firebase 에러 처리
                     if let errorCode = AuthErrorCode(rawValue: error.code) {
                         switch errorCode {
                         case .emailAlreadyInUse:
@@ -38,13 +36,20 @@ class SignUpViewModel: ObservableObject {
                         default:
                             self?.errorMessage = error.localizedDescription
                         }
-                    } else {
-                        self?.errorMessage = error.localizedDescription
                     }
                     self?.isSignedUp = false
                 } else {
-                    self?.errorMessage = ""
-                    self?.isSignedUp = true
+                    if let user = Auth.auth().currentUser {
+                        let changeRequest = user.createProfileChangeRequest()
+                        changeRequest.displayName = self?.displayName
+                        changeRequest.commitChanges { error in
+                            if let error = error {
+                                self?.errorMessage = "프로필 업데이트 중 오류 발생: \(error.localizedDescription)"
+                            } else {
+                                self?.isSignedUp = true
+                            }
+                        }
+                    }
                 }
             }
         }
