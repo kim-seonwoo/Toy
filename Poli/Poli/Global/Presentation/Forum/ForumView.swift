@@ -7,31 +7,44 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct ForumView: View {
-    @State private var showMyPageView = false
-
+    @StateObject private var viewModel = ForumViewModel()
+    
     var body: some View {
-        NavigationView {
-            ZStack {
-                Color(.whiteBackground)
-                    .ignoresSafeArea()
-                
-                Text("Forum")
-                    .font(.largeTitle)
-                    .foregroundColor(.red)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: MyPageView(), isActive: $showMyPageView) {
-                        Button(action: {
-                            showMyPageView = true
-                        }) {
-                            Image(systemName: "person.crop.circle.fill")
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(.black)
+        ZStack {
+            Color(.blue)
+                .ignoresSafeArea()
+            
+            NavigationView {
+                List(viewModel.posts) { post in
+                    NavigationLink(destination: DetailView(post: post)) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(post.title)
+                                .font(.headline)
+                            Text(post.author["displayName"] ?? "Anonymous")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                .onAppear {
+                    viewModel.fetchPosts()
+                }
+                .navigationTitle("Forum")
+                .toolbar {
+                    ToolbarItem(placement: .bottomBar) {
+                        NavigationLink(destination: PostView()) {
+                            Image(systemName: "plus")
+                                .font(.title2)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: MyPageView()) {
+                            Image(systemName: "person.circle")
+                                .font(.title2)
+                                .foregroundColor(.primary)
                         }
                     }
                 }
