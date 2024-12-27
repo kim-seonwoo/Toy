@@ -20,6 +20,7 @@ class PostViewModel: ObservableObject {
     func createPost() {
         guard let user = Auth.auth().currentUser else {
             errorMessage = "You must be logged in to create a post."
+            AppStateManager.shared.logOut()
             return
         }
         

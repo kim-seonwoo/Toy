@@ -8,11 +8,19 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var appStateManager = AppStateManager.shared
+
     var body: some View {
-        ForumView()
+        Group {
+            if appStateManager.isLoggedIn {
+                ForumView()
+            } else {
+                LoginView()
+            }
+        }
+        .onAppear {
+            appStateManager.checkAuthState()
+        }
     }
 }
 
-#Preview {
-    ContentView()
-}

@@ -63,6 +63,7 @@ class SignUpViewModel: ObservableObject {
         
         userRef.setData(userData) { error in
             if let error = error {
+                AppStateManager.shared.logOut()
                 DispatchQueue.main.async {
                     self.errorMessage = "Failed to save user data: \(error.localizedDescription)"
                 }

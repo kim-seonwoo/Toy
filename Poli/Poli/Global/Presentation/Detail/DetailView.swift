@@ -17,9 +17,9 @@ struct DetailView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            // Post Details
+            
             VStack(alignment: .leading, spacing: 10) {
-                Text("By \(viewModel.post.author["displayName"] ?? "Anonymous")")
+                Text("\(viewModel.post.author["displayName"] ?? "Anonymous")")
                     .font(.subheadline)
                     .foregroundColor(.gray)
                 Text(viewModel.post.content)
@@ -30,33 +30,14 @@ struct DetailView: View {
                 Button(action: {
                     viewModel.conservativePost()
                 }) {
-                    Label("\(viewModel.post.conservative)", systemImage: "hand.thumbsup")
-                        .foregroundColor(.blue)
+                    Text("보수 \(viewModel.post.conservative)")
+                        .foregroundColor(.conservative)
                 }
                 Button(action: {
                     viewModel.liberalPost()
                 }) {
-                    Label("\(viewModel.post.liberal)", systemImage: "hand.thumbsdown")
-                        .foregroundColor(.red)
-                }
-            }
-            
-            Divider()
-            
-            // Add Comment Section
-            VStack(alignment: .leading, spacing: 10) {
-                TextField("Write a comment...", text: $newComment)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                Button(action: {
-                    viewModel.addComment(content: newComment)
-                    newComment = ""
-                }) {
-                    Text("Submit Comment")
-                        .bold()
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .foregroundColor(.whiteBackground)
-                        .background(.primary)
-                        .cornerRadius(8)
+                    Text("진보 \(viewModel.post.liberal)")
+                        .foregroundColor(.liberal)
                 }
             }
             
@@ -68,35 +49,64 @@ struct DetailView: View {
                         Text(comment.content)
                             .font(.body)
                         
-                        Text("By \(comment.author["displayName"] ?? "Anonymous")")
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                        HStack {
+                            Circle()
+                                .fill(comment.politicalOrientation.color)
+                                .frame(width: 16, height: 16)
+                            Text("\(comment.author["displayName"] ?? "Anonymous")")
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
                         
                         HStack {
                             Button(action: {
                                 viewModel.updateCommentVote(for: "conservative", in: comment.id)
                             }) {
-                                Label("\(comment.conservative)", systemImage: "hand.thumbsup")
-                                    .foregroundColor(.blue)
+                                Text("보수 \(comment.conservative)")
+                                    .foregroundColor(.conservative)
                             }
                             Button(action: {
                                 viewModel.updateCommentVote(for: "liberal", in: comment.id)
                             }) {
-                                Label("\(comment.liberal)", systemImage: "hand.thumbsdown")
-                                    .foregroundColor(.red)
+                                Text("진보 \(comment.liberal)")
+                                    .foregroundColor(.liberal)
                             }
                         }
                     }
                     .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(8)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Divider()
+                }
+                
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            
+            // Add Comment Section
+            VStack(alignment: .leading, spacing: 10) {
+                TextField("댓글", text: $newComment)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                Button(action: {
+                    viewModel.addComment(content: newComment)
+                    newComment = ""
+                }) {
+                    Text("댓글 작성")
+                        .bold()
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .foregroundColor(.whiteBackground)
+                        .background(.primary)
+                        .cornerRadius(8)
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-
+            
+            Divider()
+            
         }
         .padding()
+        .onAppear {
+            viewModel.fetchComments()
+        }
         .navigationTitle(viewModel.post.title)
         .navigationBarTitleDisplayMode(.large)
     }
+    
 }

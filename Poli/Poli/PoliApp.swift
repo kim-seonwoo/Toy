@@ -11,10 +11,12 @@ import SwiftUI
 struct PoliApp: App {
     
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject private var appStateManager = AppStateManager()
     
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(appStateManager)
         }
     }
 }

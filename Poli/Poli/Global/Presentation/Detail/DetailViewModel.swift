@@ -20,8 +20,8 @@ class DetailViewModel: ObservableObject {
         self.post = post
     }
     
-    func fetchComments(for postId: String) {
-        let commentsRef = db.collection("comments").whereField("postId", isEqualTo: postId).order(by: "createdAt", descending: false)
+    func fetchComments() {
+        let commentsRef = db.collection("comments").whereField("postId", isEqualTo: post.id).order(by: "createdAt", descending: false)
         
         commentsRef.getDocuments { snapshot, error in
             if let error = error {
@@ -30,7 +30,7 @@ class DetailViewModel: ObservableObject {
                 }
             } else {
                 DispatchQueue.main.async {
-                    self.comments = snapshot?.documents.compactMap { doc -> Comment? in
+                    let fetchedComments = snapshot?.documents.compactMap { doc -> Comment? in
                         let data = doc.data()
                         return Comment(
                             id: doc.documentID,
@@ -43,14 +43,49 @@ class DetailViewModel: ObservableObject {
                             likedBy: data["likedBy"] as? [String] ?? []
                         )
                     } ?? []
+                    
+                    self.comments = fetchedComments
+                    
+                    // Fetch political orientation for each author
+                    for index in self.comments.indices {
+                        let authorId = self.comments[index].author["uid"] ?? ""
+                        self.fetchUserPoliticalOrientation(for: authorId) { orientation in
+                            DispatchQueue.main.async {
+                                self.comments[index].politicalOrientation = orientation
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
+    private func fetchUserPoliticalOrientation(for userId: String, completion: @escaping (PoliticalOrientation) -> Void) {
+        let userRef = db.collection("users").document(userId)
+        userRef.getDocument { snapshot, error in
+            if let error = error {
+                print("Failed to fetch user data: \(error.localizedDescription)")
+                completion(.center) // 기본값 반환
+            } else if let data = snapshot?.data() {
+                let liberalCount = data["liberal"] as? Int ?? 0
+                let conservativeCount = data["conservative"] as? Int ?? 0
+                let percentages = UserPoliticalOrientationCalculator.calculatePercentage(
+                    liberal: liberalCount,
+                    conservative: conservativeCount
+                )
+                let orientation = UserPoliticalOrientationCalculator.determinePoliticalOrientation(
+                    liberalPercentage: percentages.liberalPercentage
+                )
+                completion(orientation)
+            }
+        }
+    }
+
+
     func addComment(content: String) {
         guard let user = Auth.auth().currentUser else {
             errorMessage = "You must be logged in to add a comment."
+            AppStateManager.shared.logOut()
             return
         }
         
@@ -78,7 +113,7 @@ class DetailViewModel: ObservableObject {
                 }
             } else {
                 DispatchQueue.main.async {
-                    self.fetchComments(for: self.post.id)
+                    self.fetchComments()
                 }
             }
         }
@@ -94,28 +129,46 @@ class DetailViewModel: ObservableObject {
             var count = data[type] as? Int ?? 0
             var likedBy = data["likedBy"] as? [String] ?? []
             
-            guard !likedBy.contains(self.currentUserId) else { return nil } // 중복 방지
+            // 중복 투표 방지
+            guard !likedBy.contains(self.currentUserId) else { return nil }
             
             count += 1
             likedBy.append(self.currentUserId)
             
+            // 업데이트된 데이터를 Firestore에 반영
             transaction.updateData([
                 type: count,
                 "likedBy": likedBy
             ], forDocument: commentRef)
             
             self.updateUserVoteCount(for: type)
+            
+            // 로컬 데이터 동기화
+            DispatchQueue.main.async {
+                if let index = self.comments.firstIndex(where: { $0.id == commentId }) {
+                    if type == "conservative" {
+                        self.comments[index].conservative = count
+                    } else if type == "liberal" {
+                        self.comments[index].liberal = count
+                    }
+                }
+            }
             return nil
         } completion: { _, error in
             if let error = error {
                 self.errorMessage = "Failed to update vote: \(error.localizedDescription)"
+            } else {
+                // 댓글 리스트 다시 가져오기
+                self.fetchComments()
             }
         }
     }
+
     
     func updateUserVoteCount(for type: String) {
         guard let user = Auth.auth().currentUser else {
             self.errorMessage = "You must be logged in."
+            AppStateManager.shared.logOut()
             return
         }
 
