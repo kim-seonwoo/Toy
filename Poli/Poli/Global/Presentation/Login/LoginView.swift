@@ -21,7 +21,7 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color(.whiteBackground)
+                Color(.white)
                     .ignoresSafeArea()
                 
                 VStack(spacing: 50) {
@@ -30,8 +30,9 @@ struct LoginView: View {
                     
                     VStack(spacing: 20) {
                         PoliTextField(placeholder: "이메일", text: $viewModel.email)
-                        
+                   
                         PoliTextField(placeholder: "비밀번호", text: $viewModel.password, isSecure: true)
+                        
                         
                         if !viewModel.errorMessage.isEmpty {
                             Text(viewModel.errorMessage)
@@ -48,7 +49,7 @@ struct LoginView: View {
                                 .bold()
                                 .frame(maxWidth: .infinity, minHeight: 44)
                                 .background(.blackText)
-                                .foregroundColor(.whiteBackground)
+                                .foregroundColor(.white)
                                 .cornerRadius(8)
                         }
                         
@@ -69,6 +70,7 @@ struct LoginView: View {
                 ForumView()
             }
         }
+//        .tint(.black)
     }
 }
 

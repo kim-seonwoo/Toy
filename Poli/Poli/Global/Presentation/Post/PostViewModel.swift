@@ -34,6 +34,9 @@ class PostViewModel: ObservableObject {
                 "uid": user.uid,
                 "displayName": user.displayName ?? "Anonymous"
             ],
+            "conservative": 0,
+            "liberal": 0,
+            "likedBy": [],
             "createdAt": createdAt
         ]
         
@@ -54,7 +57,7 @@ class PostViewModel: ObservableObject {
 extension Date {
     func formattedString() -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss" // 원하는 날짜 형식
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
         return formatter.string(from: self)
     }
 }

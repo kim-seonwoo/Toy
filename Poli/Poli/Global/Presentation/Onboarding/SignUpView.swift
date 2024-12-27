@@ -12,7 +12,7 @@ struct SignUpView: View {
     
     var body: some View {
         ZStack {
-            Color(.whiteBackground)
+            Color(.white)
                 .ignoresSafeArea()
             
             VStack(spacing: 50) {
@@ -38,7 +38,7 @@ struct SignUpView: View {
                         .bold()
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .background(.blackText)
-                        .foregroundColor(.whiteBackground)
+                        .foregroundColor(.white)
                         .cornerRadius(8)
                 }
                 
@@ -49,6 +49,9 @@ struct SignUpView: View {
                 }
             }
             .padding()
+            .tint(.black)
+            .accentColor(.black)
+            .foregroundColor(.black)
         }
         .fullScreenCover(isPresented: $viewModel.isSignedUp) {
             ForumView()

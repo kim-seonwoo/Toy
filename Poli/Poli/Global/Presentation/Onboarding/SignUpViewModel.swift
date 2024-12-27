@@ -5,7 +5,7 @@
 //  Created by Seonwoo Kim on 12/23/24.
 //
 
-import SwiftUI
+import FirebaseFirestore
 import FirebaseAuth
 
 class SignUpViewModel: ObservableObject {
@@ -16,6 +16,8 @@ class SignUpViewModel: ObservableObject {
     @Published var errorMessage: String = ""
     @Published var isSignedUp: Bool = false
 
+    private let db = Firestore.firestore()
+    
     func signUp() {
         guard password == confirmPassword else {
             errorMessage = "비밀번호가 일치하지 않습니다."
@@ -39,17 +41,34 @@ class SignUpViewModel: ObservableObject {
                     }
                     self?.isSignedUp = false
                 } else {
-                    if let user = Auth.auth().currentUser {
-                        let changeRequest = user.createProfileChangeRequest()
-                        changeRequest.displayName = self?.displayName
-                        changeRequest.commitChanges { error in
-                            if let error = error {
-                                self?.errorMessage = "프로필 업데이트 중 오류 발생: \(error.localizedDescription)"
-                            } else {
-                                self?.isSignedUp = true
-                            }
-                        }
-                    }
+                    self?.saveUserToFirestore()
+                }
+            }
+        }
+    }
+    
+    private func saveUserToFirestore() {
+        guard let user = Auth.auth().currentUser else { return }
+        
+        let userRef = db.collection("users").document(user.uid)
+        let createdAt = Date().formattedString()
+        
+        let userData: [String: Any] = [
+            "displayName": self.displayName,
+            "email": self.email,
+            "liberal": 0,
+            "conservative": 0,
+            "createdAt": createdAt
+        ]
+        
+        userRef.setData(userData) { error in
+            if let error = error {
+                DispatchQueue.main.async {
+                    self.errorMessage = "Failed to save user data: \(error.localizedDescription)"
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.isSignedUp = true
                 }
             }
         }

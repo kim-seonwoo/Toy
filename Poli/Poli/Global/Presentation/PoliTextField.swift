@@ -13,7 +13,7 @@ struct PoliTextField: View {
     var isSecure: Bool = false
     var textColor: Color = .blackText
     var placeholderColor: Color = .textfield
-    var backgroundColor: Color = .whiteBackground
+    var backgroundColor: Color = .white
     var borderColor: Color = .textfield
     var cornerRadius: CGFloat = 8
     var padding: CGFloat = 24
@@ -44,6 +44,7 @@ struct PoliTextField: View {
         .frame(height: frameHeight)
         .background(backgroundColor)
         .cornerRadius(cornerRadius)
+        .tint(.black)
         .overlay(
             RoundedRectangle(cornerRadius: cornerRadius)
                 .stroke(borderColor, lineWidth: 1)

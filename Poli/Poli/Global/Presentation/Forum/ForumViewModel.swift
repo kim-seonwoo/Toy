@@ -31,6 +31,9 @@ class ForumViewModel: ObservableObject {
                                 title: data["title"] as? String ?? "",
                                 content: data["content"] as? String ?? "",
                                 author: data["author"] as? [String: String] ?? [:],
+                                conservative: data["conservative"] as? Int ?? 0,
+                                liberal: data["liberal"] as? Int ?? 0,
+                                likedBy: data["likedBy"] as? [String] ?? [],
                                 createdAt: data["createdAt"] as? String ?? "Unknown date"
                             )
                         } ?? []
