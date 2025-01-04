@@ -14,7 +14,7 @@ struct Comment: Identifiable {
     var conservative: Int
     var liberal: Int
     var likedBy: [String]
-    var politicalOrientation: PoliticalOrientation = .center // 기본값 중도
+    var politicalOrientation: PoliticalOrientation = .center
 }
 
 
